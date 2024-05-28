@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import Todo from "/Components/Todo";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import Todo from '/Components/Todo';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
 
 export default function Home() {
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
+    title: '',
+    description: '',
   });
   const [todoData, setTodoData] = useState([]);
 
   const fetchTodos = async () => {
-    const response = await axios("/api");
+    const response = await axios('/api');
 
     setTodoData(response.data.todos);
   };
@@ -32,17 +32,43 @@ export default function Home() {
 
     try {
       // api code
-      const response = await axios.post("/api", formData);
+      const response = await axios.post('/api', formData);
       toast.success(response.data.msg);
       setFormData({
-        title: "",
-        description: "",
+        title: '',
+        description: '',
       });
       fetchTodos();
     } catch (err) {
-      toast.error("Error");
-      console.log("err: ", err);
+      toast.error('Error');
+      console.log('err: ', err);
     }
+  };
+
+  const deleteTodo = async (id) => {
+    try {
+      const response = await axios.delete('/api', { params: { mongoId: id } });
+
+      toast.success(response.data.msg);
+      fetchTodos();
+    } catch (err) {
+      toast.error('Error');
+      console.log('err: ', err);
+    }
+  };
+
+  const completeToto = async (id) => {
+    const response = await axios.put(
+      '/api',
+      {},
+      {
+        params: {
+          mongoId: id,
+        },
+      },
+    );
+    toast.success(response.data.msg);
+    fetchTodos();
   };
 
   useEffect(() => {
@@ -98,16 +124,20 @@ export default function Home() {
             </tr>
           </thead>
           <tbody>
-            {todoData.map(({ title, description, isComplete, id }, index) => (
-              <Todo
-                key={index}
-                id={index}
-                title={title}
-                description={description}
-                complete={isComplete}
-                mongoId={id}
-              />
-            ))}
+            {todoData.map(
+              ({ title, description, isCompleted, _id: id }, index) => (
+                <Todo
+                  key={index}
+                  id={index}
+                  title={title}
+                  description={description}
+                  complete={isCompleted}
+                  mongoId={id}
+                  deleteTodo={deleteTodo}
+                  completeToto={completeToto}
+                />
+              ),
+            )}
           </tbody>
         </table>
       </div>
